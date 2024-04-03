@@ -1,149 +1,86 @@
-import { useState, useEffect } from "react";
-import Note from "./Note.js";
+import { useState } from "react";
+import Note, { NoteProps } from "./Note.js";
 import CreateArea from "./CreateArea";
-import notingIcon from "../assets/noty.png";
 import useLocalStorageState from "../hooks/useLocalStorageState.js";
+import Header from "./Header.js";
+import NoteList from "./NoteList.js";
 
-function Todolist() {
+type Note = Omit<NoteProps, "deleteNote" | "markCompleted">;
+
+export default function Todolist() {
   // State variables
-  const [notes, setNotes] = useLocalStorageState("notes", []);
+
+  const [notes, setNotes] = useLocalStorageState<Note[]>("notes", []);
   const [sortBy, setSortBy] = useLocalStorageState("sortBy", "");
   const [showCompleted, setShowCompleted] = useState(false);
-  const [sortButtonActive, setSortButtonActive] = useState("");
-  const [filterButtonActive, setFilterButtonActive] = useLocalStorageState(false);
-
-  // Side effects
-  useEffect(() => {
-    setSortButtonActive(sortBy);
-  }, [sortBy, showCompleted]);
-
-  useEffect(() => {
-    setFilterButtonActive(showCompleted);
-  }, [showCompleted]);
 
   // Handlers
-  const handleSortBy = (sortByValue) => {
+  const handleSortBy = (sortByValue: string) => {
     setSortBy(sortByValue);
-    setSortButtonActive(sortByValue);
-    setFilterButtonActive(false);
   };
 
   const handleToggleCompleted = () => {
     setShowCompleted(!showCompleted);
-    setFilterButtonActive(!showCompleted);
-    setSortButtonActive("");
   };
 
   // Utility functions
-  const addNote = (note) => {
+  const addNote = (note: Note) => {
     setNotes([...notes, note]);
   };
 
-  const deleteNote = (id) => {
-    const newNotes = notes.filter((note) => note.id !== id);
+  const deleteNote = (id: number) => {
+    const newNotes = notes.filter((note: Note) => note.id !== id);
     setNotes(newNotes);
   };
 
-  const markCompleted = (id, completed) => {
-    const newNotes = notes.map((note) =>
+  const markCompleted = (id: number, completed: boolean) => {
+    const newNotes = notes.map((note: Note) =>
       note.id === id ? { ...note, completed } : note
     );
     setNotes(newNotes);
   };
 
-  const sortedNotes = (notesToSort) => {
+  const sortedNotes = (notesToSort: Note[]) => {
     switch (sortBy) {
-      case "createdAt":
-        return [...notesToSort].sort((a, b) => a.createdAt - b.createdAt);
-      case "name":
-        return [...notesToSort].sort((a, b) => a.title.localeCompare(b.title));
-      case "deadline":
+      case "SORT_BY_CREATED_AT":
         return [...notesToSort].sort(
-          (a, b) => new Date(a.deadline) - new Date(b.deadline)
+          (a, b) => parseInt(a.createdAt) - parseInt(b.createdAt)
         );
-      case "priority":
-        return [...notesToSort].sort((a, b) => a.priority - b.priority);
+      case "SORT_BY_NAME":
+        return [...notesToSort].sort((a, b) => a.title.localeCompare(b.title));
+      case "SORT_BY_DEADLINE":
+        return [...notesToSort].sort(
+          (a, b) =>
+            new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+        );
+      case "SORT_BY_PRIORITY":
+        return [...notesToSort].sort(
+          (a, b) => parseInt(a.priority) - parseInt(b.priority)
+        );
       default:
         return notesToSort;
     }
   };
 
   const filteredNotes = showCompleted
-    ? notes.filter((note) => note.completed)
+    ? notes.filter((note: Note) => note.completed)
     : notes;
 
   return (
     <div className="text-white">
-      <header className="bg-transparent py-4 rounded-b-xl shadow">
-        <h1 className="text-white text-center text-3xl font-semibold">
-          <img
-            src={notingIcon}
-            height={40}
-            width={40}
-            alt="noting"
-            className="inline-block mr-2"
-          />
-          Todolist
-        </h1>
-        <div className="flex justify-center mt-10 hover:cursor-pointer gap-5">
-          <SortButton
-            label="Sort by Name"
-            active={sortButtonActive === "name"}
-            onClick={() => handleSortBy("name")}
-          />
-          <SortButton
-            label="Sort by Created At"
-            active={sortButtonActive === "createdAt"}
-            onClick={() => handleSortBy("createdAt")}
-          />
-          <SortButton
-            label="Sort by Deadline"
-            active={sortButtonActive === "deadline"}
-            onClick={() => handleSortBy("deadline")}
-          />
-          <SortButton
-            label="Sort by Priority"
-            active={sortButtonActive === "priority"}
-            onClick={() => handleSortBy("priority")}
-          />
-          <div
-            onClick={handleToggleCompleted}
-            className={`border-2 border-white p-2 ${
-              filterButtonActive ? "bg-green-500" : ""
-            }`}
-          >
-            Toggle Completed
-          </div>
-        </div>
-      </header>
-
-      <div>
-        <CreateArea addNote={addNote} />
-        <div className="flex flex-wrap mt-5 justify-center pb-8 gap-10">
-          {sortedNotes(filteredNotes).map((noteItem) => (
-            <Note
-              key={noteItem.id}
-              {...noteItem}
-              deleteNote={deleteNote}
-              markCompleted={markCompleted}
-            />
-          ))}
-        </div>
-      </div>
+      <Header
+        handleSortBy={handleSortBy}
+        handleToggleCompleted={handleToggleCompleted}
+        showCompleted={showCompleted}
+        sortBy={sortBy}
+      />
+      <CreateArea addNote={addNote} />
+      <NoteList
+        deleteNote={deleteNote}
+        markCompleted={markCompleted}
+        sortedNotes={sortedNotes}
+        filteredNotes={filteredNotes}
+      />
     </div>
   );
 }
-
-// Sort Button Component
-function SortButton({ label, active, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      className={`mr-2 border-2 border-white p-2 ${active ? "bg-green-500" : ""}`}
-    >
-      {label}
-    </div>
-  );
-}
-
-export default Todolist;

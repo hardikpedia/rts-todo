@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { Tooltip } from "react-tooltip";
 
+export type NoteProps = {
+  id: number;
+  title: string;
+  note: string;
+  deadline: string;
+  priority: string;
+  createdAt: string;
+  completed: boolean;
+  deleteNote: (id: number) => void;
+  markCompleted: (id: number, completed: boolean) => void;
+};
+
 function Note({
   id,
   note,
@@ -11,7 +23,8 @@ function Note({
   completed,
   priority,
   deadline,
-}) {
+}: NoteProps) {
+  
   const [isCompleted, setIsCompleted] = useState(completed);
 
   function handleDelete() {
@@ -49,7 +62,6 @@ function Note({
           <div className="w-4 h-1 bg-white transform rotate-45 absolute"></div>
           <div className="w-4 h-1 bg-white transform -rotate-45 absolute"></div>
           <Tooltip id="delete-tooltip" />
-
         </div>
       </div>
       <div className="px-8 py-6 flex items-center ">

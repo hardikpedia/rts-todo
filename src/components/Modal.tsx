@@ -1,9 +1,30 @@
 import { Close } from "@mui/icons-material";
-export default function Modal({ note, handleChange, submitNote, closeModal }) {
+import { NoteProps } from "./Note";
+
+type ModalProps = {
+  note: Omit<
+    NoteProps,
+    "id" | "createdAt" | "completed" | "deleteNote" | "markCompleted"
+  >;
+  handleChange: (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => void;
+  submitNote: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  closeModal: () => void;
+};
+
+export default function Modal({
+  note,
+  handleChange,
+  submitNote,
+  closeModal,
+}: ModalProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-10">
       <div className="absolute inset-0 bg-black opacity-50 "></div>
-      <div className="z-20 bg-primary rounded-lg p-8 w-80">
+      <div className="z-20 bg-primary rounded-lg p-8 w-5/12">
         <form className="create-note relative">
           <Close
             onClick={closeModal}

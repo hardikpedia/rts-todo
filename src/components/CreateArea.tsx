@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import Fab from "@mui/material/Fab";
 import Zoom from "@mui/material/Zoom";
-import { Close } from "@mui/icons-material";
 import { Tooltip } from "react-tooltip";
 import Modal from "./Modal";
-function CreateArea({ addNote }) {
+import { NoteProps } from "./Note";
+
+type CreateAreaProps = {
+  addNote: (note: Omit<NoteProps, "deleteNote" | "markCompleted">) => void;
+};
+
+function CreateArea({ addNote }: CreateAreaProps) {
   // State variables
   const [isExpanded, setExpanded] = useState(false);
   const [note, setNote] = useState({
@@ -16,7 +21,11 @@ function CreateArea({ addNote }) {
   });
 
   // Event handlers
-  const handleChange = (event) => {
+  const handleChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = event.target;
     setNote((prevNote) => ({
       ...prevNote,
@@ -24,7 +33,7 @@ function CreateArea({ addNote }) {
     }));
   };
 
-  const submitNote = (event) => {
+  const submitNote = (event: React.MouseEvent<HTMLButtonElement>) => {
     addNote({
       ...note,
       createdAt: new Date().toLocaleDateString(),
@@ -56,11 +65,13 @@ function CreateArea({ addNote }) {
           onClick={expand}
           className="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded-md font-mono"
           title="Add Note"
+          data-tooltip-id="add-tooltip"
+          data-tooltip-content={"Add Note"}
         >
           <AddIcon />
         </Fab>
       </Zoom>
-      <Tooltip id="my-tooltip" />
+      <Tooltip id="add-tooltip" />
 
       {isExpanded && (
         <Modal
